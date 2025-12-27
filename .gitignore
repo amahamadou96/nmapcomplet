@@ -1,0 +1,74 @@
+# Portfolio .gitignore
+
+# ===================
+# ENVIRONMENT
+# ===================
+.env
+.env.local
+.env.*.local
+
+# ===================
+# SYSTEM FILES
+# ===================
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ===================
+# DEPENDENCIES
+# ===================
+node_modules/
+composer.lock
+vendor/
+
+# ===================
+# LOGS & DATA
+# ===================
+logs/
+*.log
+contact_log.txt
+.sqlite
+
+# ===================
+# UPLOADS & TEMP
+# ===================
+uploads/
+temp/
+cache/
+*.tmp
+
+# ===================
+# COMPILED FILES
+# ===================
+*.css.map
+*.js.map
+dist/
+build/
+
+# ===================
+# TESTING
+# ===================
+coverage/
+.phpunit.result.cache
+
+# ===================
+# IDE
+# ===================
+.vscode
+.idea
+*.sublime-project
+*.sublime-workspace
+
+# ===================
+# OS FILES
+# ===================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
