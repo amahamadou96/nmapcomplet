@@ -1,0 +1,570 @@
+#!/bin/bash
+
+# Tracer - Script Nmap Complet et Puissant
+# Couleurs
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+YELLOW='\033[1;33m'
+CYAN='\033[0;36m'
+MAGENTA='\033[0;35m'
+WHITE='\033[1;37m'
+NC='\033[0m' # No Color
+
+# Fonction pour afficher la bannière
+show_banner() {
+    clear
+    echo -e "${CYAN}"
+    echo "╔════════════════════════════════════════════════════════════╗"
+    echo "║                  🎯 TRACER - NMAP TOOL 🎯                  ║"
+    echo "║              Scanner Réseau Professionnel                  ║"
+    echo "╚════════════════════════════════════════════════════════════╝"
+    echo -e "${NC}"
+}
+
+# Vérifier si nmap est installé
+check_nmap() {
+    if ! command -v nmap &> /dev/null; then
+        echo -e "${RED}❌ Nmap n'est pas installé!${NC}"
+        echo -e "${YELLOW}📦 Installation recommandée: sudo apt install nmap (Debian/Ubuntu)${NC}"
+        exit 1
+    else
+        echo -e "${GREEN}✅ Nmap détecté: $(nmap --version | head -1)${NC}"
+    fi
+}
+
+# Menu principal
+main_menu() {
+    show_banner
+    echo -e "${WHITE}════════════════ MENU PRINCIPAL ════════════════${NC}"
+    echo -e "${CYAN}1.${NC}  🔍 Scan de Découverte d'Hôtes"
+    echo -e "${CYAN}2.${NC}  🔓 Scan de Ports"
+    echo -e "${CYAN}3.${NC}  🎯 Scan de Services et Versions"
+    echo -e "${CYAN}4.${NC}  🛡️  Scan de Vulnérabilités (NSE Scripts)"
+    echo -e "${CYAN}5.${NC}  💻 Détection OS"
+    echo -e "${CYAN}6.${NC}  🚀 Scans Agressifs"
+    echo -e "${CYAN}7.${NC}  👻 Scans Furtifs/Evasion"
+    echo -e "${CYAN}8.${NC}  📊 Scans de Performance"
+    echo -e "${CYAN}9.${NC}  🌐 Scans Réseau Avancés"
+    echo -e "${CYAN}10.${NC} 📝 Formats d'Output"
+    echo -e "${CYAN}11.${NC} ⚙️  Options Avancées"
+    echo -e "${CYAN}12.${NC} 🔥 Scans Prédéfinis"
+    echo -e "${RED}0.${NC}  ❌ Quitter"
+    echo -e "${WHITE}═══════════════════════════════════════════════${NC}"
+    echo -ne "${YELLOW}Choisissez une option: ${NC}"
+    read choice
+    handle_main_menu "$choice"
+}
+
+# Gestion menu principal
+handle_main_menu() {
+    case $1 in
+        1) host_discovery_menu ;;
+        2) port_scan_menu ;;
+        3) service_version_menu ;;
+        4) vulnerability_menu ;;
+        5) os_detection_menu ;;
+        6) aggressive_scan_menu ;;
+        7) stealth_evasion_menu ;;
+        8) performance_menu ;;
+        9) network_advanced_menu ;;
+        10) output_menu ;;
+        11) advanced_options_menu ;;
+        12) preset_scans_menu ;;
+        0) echo -e "${GREEN}👋 Au revoir!${NC}"; exit 0 ;;
+        *) echo -e "${RED}❌ Option invalide${NC}"; sleep 2; main_menu ;;
+    esac
+}
+
+# Menu 1: Découverte d'Hôtes
+host_discovery_menu() {
+    show_banner
+    echo -e "${WHITE}════════ 🔍 DÉCOUVERTE D'HÔTES ════════${NC}"
+    echo -e "${CYAN}1.${NC} Ping Scan (Liste hôtes actifs)"
+    echo -e "${CYAN}2.${NC} Scan sans ping (hôtes derrière firewall)"
+    echo -e "${CYAN}3.${NC} TCP SYN Discovery"
+    echo -e "${CYAN}4.${NC} TCP ACK Discovery"
+    echo -e "${CYAN}5.${NC} UDP Discovery"
+    echo -e "${CYAN}6.${NC} ARP Discovery (réseau local)"
+    echo -e "${CYAN}7.${NC} Découverte ICMP complète"
+    echo -e "${RED}0.${NC} Retour"
+    echo -e "${WHITE}═══════════════════════════════════════${NC}"
+    echo -ne "${YELLOW}Option: ${NC}"
+    read opt
+    
+    echo -ne "${CYAN}🎯 Cible (IP/réseau): ${NC}"
+    read target
+    
+    case $opt in
+        1) run_scan "nmap -sn $target" ;;
+        2) run_scan "nmap -Pn $target" ;;
+        3) run_scan "nmap -PS $target" ;;
+        4) run_scan "nmap -PA $target" ;;
+        5) run_scan "nmap -PU $target" ;;
+        6) run_scan "nmap -PR $target" ;;
+        7) run_scan "nmap -PE -PP -PM $target" ;;
+        0) main_menu ;;
+        *) echo -e "${RED}❌ Invalide${NC}"; sleep 2; host_discovery_menu ;;
+    esac
+}
+
+# Menu 2: Scan de Ports
+port_scan_menu() {
+    show_banner
+    echo -e "${WHITE}════════ 🔓 SCAN DE PORTS ════════${NC}"
+    echo -e "${CYAN}1.${NC} Scan rapide (100 ports communs)"
+    echo -e "${CYAN}2.${NC} Scan complet (tous les 65535 ports)"
+    echo -e "${CYAN}3.${NC} Scan de ports spécifiques"
+    echo -e "${CYAN}4.${NC} Scan TCP Connect"
+    echo -e "${CYAN}5.${NC} Scan TCP SYN (furtif)"
+    echo -e "${CYAN}6.${NC} Scan UDP"
+    echo -e "${CYAN}7.${NC} Scan TCP ACK (firewall detection)"
+    echo -e "${CYAN}8.${NC} Scan TCP Window"
+    echo -e "${CYAN}9.${NC} Scan TCP Maimon"
+    echo -e "${CYAN}10.${NC} Scan NULL"
+    echo -e "${CYAN}11.${NC} Scan FIN"
+    echo -e "${CYAN}12.${NC} Scan Xmas"
+    echo -e "${RED}0.${NC} Retour"
+    echo -e "${WHITE}═══════════════════════════════════════${NC}"
+    echo -ne "${YELLOW}Option: ${NC}"
+    read opt
+    
+    echo -ne "${CYAN}🎯 Cible: ${NC}"
+    read target
+    
+    case $opt in
+        1) run_scan "nmap -F $target" ;;
+        2) run_scan "nmap -p- $target" ;;
+        3) 
+            echo -ne "${CYAN}📝 Ports (ex: 80,443,8080): ${NC}"
+            read ports
+            run_scan "nmap -p $ports $target"
+            ;;
+        4) run_scan "nmap -sT $target" ;;
+        5) run_scan "nmap -sS $target" ;;
+        6) run_scan "nmap -sU $target" ;;
+        7) run_scan "nmap -sA $target" ;;
+        8) run_scan "nmap -sW $target" ;;
+        9) run_scan "nmap -sM $target" ;;
+        10) run_scan "nmap -sN $target" ;;
+        11) run_scan "nmap -sF $target" ;;
+        12) run_scan "nmap -sX $target" ;;
+        0) main_menu ;;
+        *) echo -e "${RED}❌ Invalide${NC}"; sleep 2; port_scan_menu ;;
+    esac
+}
+
+# Menu 3: Services et Versions
+service_version_menu() {
+    show_banner
+    echo -e "${WHITE}════════ 🎯 SERVICES ET VERSIONS ════════${NC}"
+    echo -e "${CYAN}1.${NC} Détection de version standard"
+    echo -e "${CYAN}2.${NC} Détection version intensive"
+    echo -e "${CYAN}3.${NC} Détection version légère"
+    echo -e "${CYAN}4.${NC} Version + Scripts par défaut"
+    echo -e "${CYAN}5.${NC} Tous les scripts de version"
+    echo -e "${RED}0.${NC} Retour"
+    echo -e "${WHITE}═══════════════════════════════════════${NC}"
+    echo -ne "${YELLOW}Option: ${NC}"
+    read opt
+    
+    echo -ne "${CYAN}🎯 Cible: ${NC}"
+    read target
+    
+    case $opt in
+        1) run_scan "nmap -sV $target" ;;
+        2) run_scan "nmap -sV --version-intensity 9 $target" ;;
+        3) run_scan "nmap -sV --version-intensity 0 $target" ;;
+        4) run_scan "nmap -sV -sC $target" ;;
+        5) run_scan "nmap -sV --script=version $target" ;;
+        0) main_menu ;;
+        *) echo -e "${RED}❌ Invalide${NC}"; sleep 2; service_version_menu ;;
+    esac
+}
+
+# Menu 4: Vulnérabilités (NSE)
+vulnerability_menu() {
+    show_banner
+    echo -e "${WHITE}════════ 🛡️  VULNÉRABILITÉS NSE ════════${NC}"
+    echo -e "${CYAN}1.${NC} Scripts par défaut"
+    echo -e "${CYAN}2.${NC} Scripts de vulnérabilités"
+    echo -e "${CYAN}3.${NC} Scripts exploit"
+    echo -e "${CYAN}4.${NC} Scripts authentification"
+    echo -e "${CYAN}5.${NC} Brute force"
+    echo -e "${CYAN}6.${NC} Détection malware"
+    echo -e "${CYAN}7.${NC} Scripts HTTP"
+    echo -e "${CYAN}8.${NC} Scripts SMB"
+    echo -e "${CYAN}9.${NC} Scripts SSL/TLS"
+    echo -e "${CYAN}10.${NC} Scripts tous catégories"
+    echo -e "${CYAN}11.${NC} Script personnalisé"
+    echo -e "${RED}0.${NC} Retour"
+    echo -e "${WHITE}═══════════════════════════════════════${NC}"
+    echo -ne "${YELLOW}Option: ${NC}"
+    read opt
+    
+    echo -ne "${CYAN}🎯 Cible: ${NC}"
+    read target
+    
+    case $opt in
+        1) run_scan "nmap -sC $target" ;;
+        2) run_scan "nmap --script vuln $target" ;;
+        3) run_scan "nmap --script exploit $target" ;;
+        4) run_scan "nmap --script auth $target" ;;
+        5) run_scan "nmap --script brute $target" ;;
+        6) run_scan "nmap --script malware $target" ;;
+        7) run_scan "nmap --script http-* $target" ;;
+        8) run_scan "nmap --script smb-* $target" ;;
+        9) run_scan "nmap --script ssl-* $target" ;;
+        10) run_scan "nmap --script default,vuln,exploit,auth $target" ;;
+        11)
+            echo -ne "${CYAN}📝 Nom du script: ${NC}"
+            read script
+            run_scan "nmap --script $script $target"
+            ;;
+        0) main_menu ;;
+        *) echo -e "${RED}❌ Invalide${NC}"; sleep 2; vulnerability_menu ;;
+    esac
+}
+
+# Menu 5: Détection OS
+os_detection_menu() {
+    show_banner
+    echo -e "${WHITE}════════ 💻 DÉTECTION OS ════════${NC}"
+    echo -e "${CYAN}1.${NC} Détection OS standard"
+    echo -e "${CYAN}2.${NC} Détection OS agressive"
+    echo -e "${CYAN}3.${NC} Détection OS + Version services"
+    echo -e "${CYAN}4.${NC} Détection OS + Traceroute"
+    echo -e "${CYAN}5.${NC} Guess OS (approximation)"
+    echo -e "${RED}0.${NC} Retour"
+    echo -e "${WHITE}═══════════════════════════════════════${NC}"
+    echo -ne "${YELLOW}Option: ${NC}"
+    read opt
+    
+    echo -ne "${CYAN}🎯 Cible: ${NC}"
+    read target
+    
+    case $opt in
+        1) run_scan "nmap -O $target" ;;
+        2) run_scan "nmap -O --osscan-guess $target" ;;
+        3) run_scan "nmap -O -sV $target" ;;
+        4) run_scan "nmap -O --traceroute $target" ;;
+        5) run_scan "nmap -O --fuzzy $target" ;;
+        0) main_menu ;;
+        *) echo -e "${RED}❌ Invalide${NC}"; sleep 2; os_detection_menu ;;
+    esac
+}
+
+# Menu 6: Scans Agressifs
+aggressive_scan_menu() {
+    show_banner
+    echo -e "${WHITE}════════ 🚀 SCANS AGRESSIFS ════════${NC}"
+    echo -e "${CYAN}1.${NC} Scan agressif complet (-A)"
+    echo -e "${CYAN}2.${NC} Scan intensif tous ports"
+    echo -e "${CYAN}3.${NC} Timing agressif (T4)"
+    echo -e "${CYAN}4.${NC} Timing insane (T5)"
+    echo -e "${CYAN}5.${NC} Ultra scan (tous paramètres max)"
+    echo -e "${RED}0.${NC} Retour"
+    echo -e "${WHITE}═══════════════════════════════════════${NC}"
+    echo -ne "${YELLOW}Option: ${NC}"
+    read opt
+    
+    echo -ne "${CYAN}🎯 Cible: ${NC}"
+    read target
+    
+    case $opt in
+        1) run_scan "nmap -A $target" ;;
+        2) run_scan "nmap -p- -sV -O -T4 $target" ;;
+        3) run_scan "nmap -T4 -A -v $target" ;;
+        4) run_scan "nmap -T5 -A -v $target" ;;
+        5) run_scan "nmap -T5 -A -p- --version-intensity 9 --script vuln $target" ;;
+        0) main_menu ;;
+        *) echo -e "${RED}❌ Invalide${NC}"; sleep 2; aggressive_scan_menu ;;
+    esac
+}
+
+# Menu 7: Furtivité/Evasion
+stealth_evasion_menu() {
+    show_banner
+    echo -e "${WHITE}════════ 👻 FURTIVITÉ/EVASION ════════${NC}"
+    echo -e "${CYAN}1.${NC} SYN Stealth Scan"
+    echo -e "${CYAN}2.${NC} Fragmenter paquets (-f)"
+    echo -e "${CYAN}3.${NC} Decoy scan (leurres)"
+    echo -e "${CYAN}4.${NC} Spoof IP source"
+    echo -e "${CYAN}5.${NC} Timing paranoid (T0)"
+    echo -e "${CYAN}6.${NC} Timing sneaky (T1)"
+    echo -e "${CYAN}7.${NC} Randomize hosts order"
+    echo -e "${CYAN}8.${NC} Scan avec proxy"
+    echo -e "${RED}0.${NC} Retour"
+    echo -e "${WHITE}═══════════════════════════════════════${NC}"
+    echo -ne "${YELLOW}Option: ${NC}"
+    read opt
+    
+    echo -ne "${CYAN}🎯 Cible: ${NC}"
+    read target
+    
+    case $opt in
+        1) run_scan "nmap -sS $target" ;;
+        2) run_scan "nmap -f $target" ;;
+        3) run_scan "nmap -D RND:10 $target" ;;
+        4)
+            echo -ne "${CYAN}📝 IP spoofée: ${NC}"
+            read spoof
+            run_scan "nmap -S $spoof $target"
+            ;;
+        5) run_scan "nmap -T0 $target" ;;
+        6) run_scan "nmap -T1 $target" ;;
+        7) run_scan "nmap --randomize-hosts $target" ;;
+        8)
+            echo -ne "${CYAN}📝 Proxy (ip:port): ${NC}"
+            read proxy
+            run_scan "nmap --proxies $proxy $target"
+            ;;
+        0) main_menu ;;
+        *) echo -e "${RED}❌ Invalide${NC}"; sleep 2; stealth_evasion_menu ;;
+    esac
+}
+
+# Menu 8: Performance
+performance_menu() {
+    show_banner
+    echo -e "${WHITE}════════ 📊 PERFORMANCE ════════${NC}"
+    echo -e "${CYAN}1.${NC} T0 - Paranoid (ultra lent)"
+    echo -e "${CYAN}2.${NC} T1 - Sneaky (lent)"
+    echo -e "${CYAN}3.${NC} T2 - Polite (normal lent)"
+    echo -e "${CYAN}4.${NC} T3 - Normal (défaut)"
+    echo -e "${CYAN}5.${NC} T4 - Aggressive (rapide)"
+    echo -e "${CYAN}6.${NC} T5 - Insane (ultra rapide)"
+    echo -e "${CYAN}7.${NC} Parallélisme min/max custom"
+    echo -e "${CYAN}8.${NC} Host timeout custom"
+    echo -e "${RED}0.${NC} Retour"
+    echo -e "${WHITE}═══════════════════════════════════════${NC}"
+    echo -ne "${YELLOW}Option: ${NC}"
+    read opt
+    
+    echo -ne "${CYAN}🎯 Cible: ${NC}"
+    read target
+    
+    case $opt in
+        1) run_scan "nmap -T0 $target" ;;
+        2) run_scan "nmap -T1 $target" ;;
+        3) run_scan "nmap -T2 $target" ;;
+        4) run_scan "nmap -T3 $target" ;;
+        5) run_scan "nmap -T4 $target" ;;
+        6) run_scan "nmap -T5 $target" ;;
+        7)
+            echo -ne "${CYAN}📝 Min parallelism: ${NC}"
+            read minp
+            echo -ne "${CYAN}📝 Max parallelism: ${NC}"
+            read maxp
+            run_scan "nmap --min-parallelism $minp --max-parallelism $maxp $target"
+            ;;
+        8)
+            echo -ne "${CYAN}📝 Timeout (ex: 30s): ${NC}"
+            read timeout
+            run_scan "nmap --host-timeout $timeout $target"
+            ;;
+        0) main_menu ;;
+        *) echo -e "${RED}❌ Invalide${NC}"; sleep 2; performance_menu ;;
+    esac
+}
+
+# Menu 9: Réseau Avancé
+network_advanced_menu() {
+    show_banner
+    echo -e "${WHITE}════════ 🌐 RÉSEAU AVANCÉ ════════${NC}"
+    echo -e "${CYAN}1.${NC} Traceroute"
+    echo -e "${CYAN}2.${NC} IPv6 scan"
+    echo -e "${CYAN}3.${NC} Spoof MAC address"
+    echo -e "${CYAN}4.${NC} Interface réseau spécifique"
+    echo -e "${CYAN}5.${NC} Source port spécifique"
+    echo -e "${CYAN}6.${NC} TTL custom"
+    echo -e "${CYAN}7.${NC} Scan avec données custom"
+    echo -e "${RED}0.${NC} Retour"
+    echo -e "${WHITE}═══════════════════════════════════════${NC}"
+    echo -ne "${YELLOW}Option: ${NC}"
+    read opt
+    
+    echo -ne "${CYAN}🎯 Cible: ${NC}"
+    read target
+    
+    case $opt in
+        1) run_scan "nmap --traceroute $target" ;;
+        2) run_scan "nmap -6 $target" ;;
+        3)
+            echo -ne "${CYAN}📝 MAC (ou 0 pour random): ${NC}"
+            read mac
+            run_scan "nmap --spoof-mac $mac $target"
+            ;;
+        4)
+            echo -ne "${CYAN}📝 Interface (ex: eth0): ${NC}"
+            read iface
+            run_scan "nmap -e $iface $target"
+            ;;
+        5)
+            echo -ne "${CYAN}📝 Port source: ${NC}"
+            read sport
+            run_scan "nmap --source-port $sport $target"
+            ;;
+        6)
+            echo -ne "${CYAN}📝 TTL: ${NC}"
+            read ttl
+            run_scan "nmap --ttl $ttl $target"
+            ;;
+        7)
+            echo -ne "${CYAN}📝 Données hex: ${NC}"
+            read data
+            run_scan "nmap --data $data $target"
+            ;;
+        0) main_menu ;;
+        *) echo -e "${RED}❌ Invalide${NC}"; sleep 2; network_advanced_menu ;;
+    esac
+}
+
+# Menu 10: Formats Output
+output_menu() {
+    show_banner
+    echo -e "${WHITE}════════ 📝 FORMATS OUTPUT ════════${NC}"
+    echo -e "${CYAN}1.${NC} Normal output (-oN)"
+    echo -e "${CYAN}2.${NC} XML output (-oX)"
+    echo -e "${CYAN}3.${NC} Grepable output (-oG)"
+    echo -e "${CYAN}4.${NC} Tous formats (-oA)"
+    echo -e "${CYAN}5.${NC} Script kiddie format (-oS)"
+    echo -e "${RED}0.${NC} Retour"
+    echo -e "${WHITE}═══════════════════════════════════════${NC}"
+    echo -ne "${YELLOW}Option: ${NC}"
+    read opt
+    
+    echo -ne "${CYAN}🎯 Cible: ${NC}"
+    read target
+    
+    echo -ne "${CYAN}📁 Fichier sortie: ${NC}"
+    read output
+    
+    case $opt in
+        1) run_scan "nmap -oN $output $target" ;;
+        2) run_scan "nmap -oX $output $target" ;;
+        3) run_scan "nmap -oG $output $target" ;;
+        4) run_scan "nmap -oA $output $target" ;;
+        5) run_scan "nmap -oS $output $target" ;;
+        0) main_menu ;;
+        *) echo -e "${RED}❌ Invalide${NC}"; sleep 2; output_menu ;;
+    esac
+}
+
+# Menu 11: Options Avancées
+advanced_options_menu() {
+    show_banner
+    echo -e "${WHITE}════════ ⚙️  OPTIONS AVANCÉES ════════${NC}"
+    echo -e "${CYAN}1.${NC} Résolution DNS inverse"
+    echo -e "${CYAN}2.${NC} Sans résolution DNS"
+    echo -e "${CYAN}3.${NC} Verbose mode"
+    echo -e "${CYAN}4.${NC} Debug mode"
+    echo -e "${CYAN}5.${NC} Reason (afficher raisons)"
+    echo -e "${CYAN}6.${NC} Packet trace"
+    echo -e "${CYAN}7.${NC} Resume scan"
+    echo -e "${CYAN}8.${NC} Scan avec script args"
+    echo -e "${RED}0.${NC} Retour"
+    echo -e "${WHITE}═══════════════════════════════════════${NC}"
+    echo -ne "${YELLOW}Option: ${NC}"
+    read opt
+    
+    echo -ne "${CYAN}🎯 Cible: ${NC}"
+    read target
+    
+    case $opt in
+        1) run_scan "nmap -R $target" ;;
+        2) run_scan "nmap -n $target" ;;
+        3) run_scan "nmap -v $target" ;;
+        4) run_scan "nmap -d $target" ;;
+        5) run_scan "nmap --reason $target" ;;
+        6) run_scan "nmap --packet-trace $target" ;;
+        7)
+            echo -ne "${CYAN}📁 Fichier resume: ${NC}"
+            read resume
+            run_scan "nmap --resume $resume"
+            ;;
+        8)
+            echo -ne "${CYAN}📝 Script: ${NC}"
+            read script
+            echo -ne "${CYAN}📝 Arguments: ${NC}"
+            read args
+            run_scan "nmap --script $script --script-args $args $target"
+            ;;
+        0) main_menu ;;
+        *) echo -e "${RED}❌ Invalide${NC}"; sleep 2; advanced_options_menu ;;
+    esac
+}
+
+# Menu 12: Scans Prédéfinis
+preset_scans_menu() {
+    show_banner
+    echo -e "${WHITE}════════ 🔥 SCANS PRÉDÉFINIS ════════${NC}"
+    echo -e "${CYAN}1.${NC} 🎯 Quick scan (rapide)"
+    echo -e "${CYAN}2.${NC} 🔍 Deep scan (complet)"
+    echo -e "${CYAN}3.${NC} 🌐 Web server scan"
+    echo -e "${CYAN}4.${NC} 🖥️  SMB scan (Windows)"
+    echo -e "${CYAN}5.${NC} 📧 Mail server scan"
+    echo -e "${CYAN}6.${NC} 🗄️  Database scan"
+    echo -e "${CYAN}7.${NC} 🔒 SSL/TLS scan"
+    echo -e "${CYAN}8.${NC} 👻 Stealth full scan"
+    echo -e "${CYAN}9.${NC} 🚨 Vulnerability scan"
+    echo -e "${CYAN}10.${NC} 🏢 Enterprise network scan"
+    echo -e "${RED}0.${NC} Retour"
+    echo -e "${WHITE}═══════════════════════════════════════${NC}"
+    echo -ne "${YELLOW}Option: ${NC}"
+    read opt
+    
+    echo -ne "${CYAN}🎯 Cible: ${NC}"
+    read target
+    
+    case $opt in
+        1) run_scan "nmap -T4 -F $target" ;;
+        2) run_scan "nmap -T4 -A -v -p- $target" ;;
+        3) run_scan "nmap -p 80,443,8080,8443 -sV --script http-* $target" ;;
+        4) run_scan "nmap -p 139,445 -sV --script smb-* $target" ;;
+        5) run_scan "nmap -p 25,465,587,110,995,143,993 -sV $target" ;;
+        6) run_scan "nmap -p 1433,3306,5432,27017,6379 -sV $target" ;;
+        7) run_scan "nmap -p 443,8443 --script ssl-* $target" ;;
+        8) run_scan "nmap -sS -T2 -f -p- $target" ;;
+        9) run_scan "nmap -sV --script vuln,exploit -T4 $target" ;;
+        10) run_scan "nmap -sS -A -T4 -p- --script default,discovery,vuln $target" ;;
+        0) main_menu ;;
+        *) echo -e "${RED}❌ Invalide${NC}"; sleep 2; preset_scans_menu ;;
+    esac
+}
+
+# Fonction pour exécuter un scan
+run_scan() {
+    local cmd="$1"
+    echo ""
+    echo -e "${YELLOW}═══════════════════════════════════════${NC}"
+    echo -e "${CYAN}🚀 Exécution: ${WHITE}$cmd${NC}"
+    echo -e "${YELLOW}═══════════════════════════════════════${NC}"
+    echo ""
+    
+    # Exécuter la commande et capturer le code de sortie
+    eval "$cmd"
+    local exit_code=$?
+    
+    echo ""
+    if [ $exit_code -eq 0 ]; then
+        echo -e "${GREEN}✅ Scan terminé avec succès!${NC}"
+    else
+        echo -e "${RED}❌ Erreur lors du scan (code: $exit_code)${NC}"
+    fi
+    
+    echo ""
+    echo -ne "${YELLOW}Appuyez sur Entrée pour continuer...${NC}"
+    read
+    main_menu
+}
+
+# Programme principal
+main() {
+    check_nmap
+    sleep 1
+    main_menu
+}
+
+# Lancer le programme
+main
